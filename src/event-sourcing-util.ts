@@ -1,8 +1,7 @@
 type TSimple = string | number | boolean | null | TSimple[] | { [key: string]: TSimple };
 type TJSON = { [key: string]: TSimple } | TSimple[];
 
-
-function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
+export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
     Object.keys(update).forEach(key => {
         if (target[key] === update[key]) return Array.isArray(output) ? output[key] = null : undefined;
         if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (update[key] === undefined ? null : update[key]);
@@ -13,7 +12,7 @@ function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = f
     return output;
 }
 
-function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
+export function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
     Object.keys(update).forEach(key => {
         if (target[key] === update[key]) return Array.isArray(output) ? output[key] = null : undefined;
         if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (target[key] === undefined ? null : target[key]);
@@ -24,7 +23,7 @@ function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: bool
     return output;
 }
 
-function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false): TJSON {
+export function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false): TJSON {
     if (simple) return Object.assign(target, ...events);
 
     events.forEach(event => Object.keys(event).forEach(key => {
@@ -36,7 +35,6 @@ function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false
 
     return target;
 }
-
 
 const a: TJSON = {
     key1: 'value1',
@@ -59,7 +57,6 @@ const b: TJSON = {
     },
     key5: [5, 2, 31, 44]
 }
-
 
 console.log(createEvent(a, b));
 console.log('Simple test', createEvent(a, b, true));

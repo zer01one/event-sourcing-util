@@ -1,0 +1,28 @@
+{
+  "name": "event-sourcing-util",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rmdir /s /q dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && tsc -p tsconfig.types.json && copy package.json dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "exports": {
+    "./*": {
+      "types": "./_types/*.d.ts",
+      "require": "./_cjs/*.js",
+      "import": "./_esm/*.js",
+      "default": "./_esm/*.js"
+    }
+  },
+  "typesVersions": {
+    ">=4.2": {
+      "*": [
+        "_types/*"
+      ]
+    }
+  },
+  "types": "./index.d.ts"
+}
