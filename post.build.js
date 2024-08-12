@@ -17,22 +17,19 @@ Any changes will be overwritten during the next build.
     formTypedPackageJSON(path.join(dist, '_cjs'), 'commonjs'); // Form typed json for modules
     formTypedPackageJSON(path.join(dist, '_esm'), 'module'); // Form typed json for modules
 
-    formGlobalScript('./dist/_esm/event-sourcing-util.js', path.join(dist, '_global'), 'event-sourcing-util'); // Form global script
+    formGlobalScript('../_esm/event-sourcing-util.js', path.join(dist, '_global'), 'event-sourcing-util'); // Form global script
 })();
 
 async function formGlobalScript(fromRelativePath, to, name) {
-    const module = await import(fromRelativePath).catch(err => ({ err }));
-    if (module.err) return console.error('Ошибка импорта скрипта: ', module.err);
-
-    const output = Object.values(module).reduce((acc, curr) => acc += curr += functionSeparator, '');
-
     fs.mkdirSync(to, { recursive: true }); // Create directory
 
-    fs.writeFileSync(path.join(to, name) + '.js', messageGlobalScript + functionSeparator + output, { encoding: 'utf-8' }); // Write to file
-    fs.writeFileSync(path.join(to, name) + '.encapsulated.js', createCncapsulatedGlobalModule(output, Object.keys(module)), { encoding: 'utf-8' }); // Write encapsulated to file
+    fs.writeFileSync(path.join(to, name) + '.js', globalScriptText(), { encoding: 'utf-8' }); // Write to file
 
-    function createCncapsulatedGlobalModule(output, returns) {
-        return messageGlobalScript + functionSeparator + 'const EventSourcingUtil = (() => {' + functionSeparator + output + functionSeparator + 'return { ' + returns + ' };' + functionSeparator + '})();';
+    function globalScriptText() {
+        return messageGlobalScript + functionSeparator + `const EventSourcingUtil_load = import('${fromRelativePath}').catch(err => {
+    console.error(err);
+    return {err};
+});`;
     }
 }
 

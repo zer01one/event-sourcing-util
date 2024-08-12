@@ -16,6 +16,17 @@ export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: bool
     return output;
 }
 
+export function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
+    Object.keys(update).forEach(key => {
+        if (target[key] === update[key]) return Array.isArray(output) ? output[key] = new Empty() : undefined;
+        if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (target[key] === undefined ? null : target[key]);
+        if (!output[key]) output[key] = Array.isArray(update[key]) ? [] : {};
+        return createReverseEvent(target[key], update[key], simple, output[key]);
+    });
+
+    return output;
+}
+
 export function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false, output: TJSON = {}): TJSON {
     target = deepCopy(target);
     events = events.map(event => deepCopy(event));
@@ -42,6 +53,8 @@ export function Empty(): void {
     if (!new.target) return new Empty();
 
     this.$empty = true;
+
+    Object.freeze(this);
 }
 
 Empty.is = function (target: IEmpty): boolean {
