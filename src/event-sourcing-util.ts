@@ -1,9 +1,13 @@
 type TSimple = string | number | boolean | null | TSimple[] | { [key: string]: TSimple };
 type TJSON = { [key: string]: TSimple } | TSimple[];
 
+interface IEmpty {
+    $empty: boolean;
+}
+
 export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
     Object.keys(update).forEach(key => {
-        if (target[key] === update[key]) return Array.isArray(output) ? output[key] = null : undefined;
+        if (target[key] === update[key]) return Array.isArray(output) ? output[key] = new Empty() : undefined;
         if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (update[key] === undefined ? null : update[key]);
         if (!output[key]) output[key] = Array.isArray(update[key]) ? [] : {};
         return createEvent(target[key], update[key], simple, output[key]);
@@ -12,67 +16,47 @@ export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: bool
     return output;
 }
 
-export function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
-    Object.keys(update).forEach(key => {
-        if (target[key] === update[key]) return Array.isArray(output) ? output[key] = null : undefined;
-        if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (target[key] === undefined ? null : target[key]);
-        if (!output[key]) output[key] = Array.isArray(update[key]) ? [] : {};
-        return createReverseEvent(target[key], update[key], simple, output[key]);
+export function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false, output: TJSON = {}): TJSON {
+    target = deepCopy(target);
+    events = events.map(event => deepCopy(event));
+    Object.assign(output, target);
+    if (simple) return Object.assign(output, ...events);
+
+    main(target, events, simple, output);
+
+    return output;
+
+    function main(target: TJSON, events: TJSON[], simple: boolean, output: TJSON): void {
+        events.forEach(event => Object.keys(event).forEach(key => {
+            if (typeof event[key] !== 'object' || event[key] === null) return output[key] = event[key];
+
+            if (Empty.is(event[key])) return output[key] = target[key];
+
+            if (!output[key]) output[key] = Array.isArray(event[key]) ? [] : {};
+            main(target[key], [event[key]], simple, output[key]);
+        }));
+    }
+}
+
+export function Empty(): void {
+    if (!new.target) return new Empty();
+
+    this.$empty = true;
+}
+
+Empty.is = function (target: IEmpty): boolean {
+    return (target instanceof Empty) || target?.hasOwnProperty('$empty');
+}
+
+function deepCopy(target: TJSON, output: TJSON = {}): TJSON {
+    Object.keys(target).forEach(key => {
+        if (typeof target[key] !== 'object' || target[key] === null) return output[key] = target[key];
+
+        if (Empty.is(target[key])) return output[key] = new Empty();
+
+        if (!output[key]) output[key] = Array.isArray(target[key]) ? [] : {};
+        deepCopy(target[key], output[key]);
     });
 
     return output;
 }
-
-export function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false): TJSON {
-    if (simple) return Object.assign(target, ...events);
-
-    events.forEach(event => Object.keys(event).forEach(key => {
-        if (typeof event[key] !== 'object' || event[key] === null) return target[key] = event[key];
-
-        if (!target[key]) target[key] = Array.isArray(event[key]) ? [] : {};
-        merge(target[key], [event[key]], simple);
-    }));
-
-    return target;
-}
-
-const a: TJSON = {
-    key1: 'value1',
-    key2: 2,
-    key3: true,
-    key4: {
-        key41: 'value41',
-        key42: 'value42',
-    },
-    key5: [1, 2, 3]
-}
-
-const b: TJSON = {
-    key1: 'value12',
-    key2: 23,
-    key3: false,
-    key4: {
-        key41: 'value414',
-        key42: 'value42',
-    },
-    key5: [5, 2, 31, 44]
-}
-
-console.log(createEvent(a, b));
-console.log('Simple test', createEvent(a, b, true));
-console.log(createReverseEvent(a, b));
-console.log('Simple test', createReverseEvent(a, b, true));
-console.log('Merge test', merge(a, [{
-    key6: ['msi'],
-}, {
-    key1: 'value13',
-}, {
-    key4: {
-        key43: 'value43',
-        key41: 'value212',
-    }
-}, {
-    key4: {
-        key42: null
-    }
-}]));
