@@ -85,25 +85,9 @@ describe('EventSourcingUtil: createEvent', () => {
     });
 
     test('Success merge (simple)', () => {
-        expect(EventSourcingUtil.merge(objects.a, [objects.results['a+b']], true)).toEqual({
-            key1: 'value12',
-            key2: 23,
-            key3: false,
-            key4: {
-                key41: 'value414',
-            },
-            key5: [5, { $empty: true }, 31, 44]
-        });
+        expect(EventSourcingUtil.merge(objects.a, [objects.results['a+b']], true)).toEqual(objects.results['a+b']);
 
-        expect(EventSourcingUtil.merge(objects.b, [objects.results['b+a']], true)).toEqual({
-            key1: 'value1',
-            key2: 2,
-            key3: true,
-            key4: {
-                key41: 'value41'
-            },
-            key5: [1, { $empty: true }, 3]
-        });
+        expect(EventSourcingUtil.merge(objects.b, [objects.results['b+a']], true)).toEqual(objects.results['b+a']);
     });
 
 
