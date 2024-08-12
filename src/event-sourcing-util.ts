@@ -5,6 +5,15 @@ interface IEmpty {
     $empty: boolean;
 }
 
+/**
+ * Метод для создания события изменения
+ * 
+ * @param {Object} [target] - Целевой объект, на который накладывается событие изменения
+ * @param {Object} [update] - Событие изменения
+ * @param {boolean} [simple] - Параметр отвечает за сложность output события (true - значения с типом объекта будут перезаписываться из значений c типом объекта из update, false - данные будут изменятся внутри объекта рекурсивно)
+ * @param {Object} [output] - Объект с новыми значениями из update
+ * @returns {Object}
+ */
 export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
     Object.keys(update).forEach(key => {
         if (target[key] === update[key]) return Array.isArray(output) ? output[key] = new Empty() : undefined;
@@ -16,6 +25,15 @@ export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: bool
     return output;
 }
 
+/**
+ * Метод для создания обратного события изменения
+ * 
+ * @param {Object} [target] - Целевой объект, на который накладывается событие изменения
+ * @param {Object} [update] - Событие изменения
+ * @param {boolean} [simple] - Параметр отвечает за сложность output события (true - значения с типом объекта будут перезаписываться из значений c типом объекта из update, false - данные будут изменятся внутри объекта рекурсивно)
+ * @param {Object} [output] - Объект со старыми значениями из target
+ * @returns {Object}
+ */
 export function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
     Object.keys(update).forEach(key => {
         if (target[key] === update[key]) return Array.isArray(output) ? output[key] = new Empty() : undefined;
@@ -27,6 +45,15 @@ export function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simpl
     return output;
 }
 
+/**
+ * Метод для слияния событий
+ * 
+ * @param {Object} [target] - Целевой объект, на который накладываеются события
+ * @param {Object[]} [events] - События изменений 
+ * @param {boolean} [simple] - Параметр отвечает за сложность наложения (true - значения с типом объекта будут перезаписываться из значений c типом объекта из events, false - данные будут изменятся внутри объекта рекурсивно)
+ * @param {Object} [output] - Объеденённый объект
+ * @returns {Object}
+ */
 export function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean = false, output: TJSON = {}): TJSON {
     target = deepCopy(target);
     events = events.map(event => deepCopy(event));
@@ -49,6 +76,11 @@ export function merge(target: TJSON = {}, events: TJSON[] = [], simple: boolean 
     }
 }
 
+/**
+ * Конструктор для создания пустых значений
+ * 
+ * @returns {Object}
+ */
 export function Empty(): void {
     if (!new.target) return new Empty();
 
@@ -57,11 +89,26 @@ export function Empty(): void {
     Object.freeze(this);
 }
 
+/**
+ * Статический метод для определения экземпляра Empty.
+ * 
+ * @returns {boolean}
+ */
 Empty.is = function (target: IEmpty): boolean {
     return (target instanceof Empty) || target?.hasOwnProperty('$empty');
 }
 
-function deepCopy(target: TJSON, output: TJSON = {}): TJSON {
+/**
+ * Метод для глубого копирования объекта
+ * 
+ * @private
+ * 
+ * @param {Object} [target] - Копируемый объект
+ * @param {Object} [output] - Скопированный объект
+ * @returns {Object}
+ */
+
+function deepCopy(target: TJSON = {}, output: TJSON = {}): TJSON {
     Object.keys(target).forEach(key => {
         if (typeof target[key] !== 'object' || target[key] === null) return output[key] = target[key];
 
