@@ -14,33 +14,55 @@ interface IEmpty {
  * @param {Object} [output] - Объект с новыми значениями из update
  * @returns {Object}
  */
-export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
-    Object.keys(update).forEach(key => {
-        if (target[key] === update[key]) return Array.isArray(output) ? output[key] = new Empty() : undefined;
-        if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (update[key] === undefined ? null : update[key]);
-        if (!output[key]) output[key] = Array.isArray(update[key]) ? [] : {};
-        return createEvent(target[key], update[key], simple, output[key]);
-    });
 
-    return output;
-}
+export function createEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}, reverse: boolean = false): TJSON {
+    const stack = Object.keys(update).map(key => Array(key));
 
-/**
- * Метод для создания обратного события изменения
- * 
- * @param {Object} [target] - Целевой объект, на который накладывается событие изменения
- * @param {Object} [update] - Событие изменения
- * @param {boolean} [simple] - Параметр отвечает за сложность output события (true - значения с типом объекта будут перезаписываться из значений c типом объекта из update, false - данные будут изменятся внутри объекта рекурсивно)
- * @param {Object} [output] - Объект со старыми значениями из target
- * @returns {Object}
- */
-export function createReverseEvent(target: TJSON = {}, update: TJSON = {}, simple: boolean = false, output: TJSON = {}): TJSON {
-    Object.keys(update).forEach(key => {
-        if (target[key] === update[key]) return Array.isArray(output) ? output[key] = new Empty() : undefined;
-        if (simple || !target[key] || typeof target[key] !== typeof target[key] || typeof update[key] !== 'object') return output[key] = (target[key] === undefined ? null : target[key]);
-        if (!output[key]) output[key] = Array.isArray(update[key]) ? [] : {};
-        return createReverseEvent(target[key], update[key], simple, output[key]);
-    });
+    while (stack.length) {
+        const path = stack.pop();
+        const key = getKey(path);
+        const currentTarget = byPath(path, target);
+        const currentUpdate = byPath(path, update);
+        const currentOutput = byPath(path, output);
+
+        if (currentTarget[key] === currentUpdate[key]) {
+            if (Array.isArray(currentOutput)) currentOutput[key] = new Empty();
+            continue;
+        }
+
+        if (simple) {
+            currentOutput[key] = !reverse ? currentUpdate[key] : currentTarget[key];
+            continue;
+        }
+
+        if (typeof currentUpdate[key] === 'object') {
+            if (!currentOutput[key]) currentOutput[key] = Array.isArray(currentUpdate[key]) ? [] : {};
+
+            stack.push(
+                ...Object.keys(currentUpdate[key]).map(key => {
+                    const newpath = path.slice();
+                    newpath.push(key);
+                    return newpath;
+                })
+            );
+        } else {
+            if (reverse) {
+                currentOutput[key] = currentTarget[key];
+                continue;
+            }
+
+            currentOutput[key] = currentUpdate[key] !== undefined ? currentUpdate[key] : null;
+        }
+    }
+
+    function byPath(path: any = [], target: TJSON = {}): TJSON {
+        path = path.slice(0, -1);
+        return path.length === 0 ? target : path.reduce((target: TJSON, key: string) => target?.[key], target);
+    }
+
+    function getKey(path: any = []): any {
+        return path[path.length - 1];
+    }
 
     return output;
 }

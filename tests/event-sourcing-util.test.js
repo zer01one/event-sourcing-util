@@ -78,6 +78,20 @@ describe('EventSourcingUtil: createEvent', () => {
         expect(EventSourcingUtil.createEvent(objects.b, objects.a, true)).toEqual(objects.results['b+a-s']);
     });
 
+    test('Success create event (no simple) no recursive', () => {
+        const result = EventSourcingUtil.createEventNOREC(objects.a, objects.b);
+        console.log('Result', result);
+        expect(result).toEqual(objects.results['a+b']);
+
+        expect(EventSourcingUtil.createEventNOREC(objects.b, objects.a)).toEqual(objects.results['b+a']);
+    });
+
+    test('Success create event (simple) no recursive', () => {
+        expect(EventSourcingUtil.createEventNOREC(objects.a, objects.b, true)).toEqual(objects.results['a+b-s']);
+
+        expect(EventSourcingUtil.createEventNOREC(objects.b, objects.a, true)).toEqual(objects.results['b+a-s']);
+    });
+
     test('Success merge (no simple)', () => {
         expect(EventSourcingUtil.merge(objects.a, [objects.results['a+b']])).toEqual(objects.b);
 

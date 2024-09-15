@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rmdir /s /q dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && tsc -p tsconfig.types.json && copy package.json dist && node post.build.js"
+    "build": "rmdir /s /q dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && tsc -p tsconfig.types.json && copy package.json dist && node post.build.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
